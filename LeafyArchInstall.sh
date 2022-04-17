@@ -27,23 +27,23 @@ done
 isSSD = echo "$diskConfirmation" | grep -q 'nvme'
 echo -e "\nSSD? $isSSD\n"
 
-echo -e "\nDisk $selectedDisk partitions: "
-sfdisk -l $selectedDisk
+# echo -e "\nDisk $selectedDisk partitions: "
+# sfdisk -l $selectedDisk
 
-echo -e "\nWiping disk $selectedDisk..." 
-sfdisk --delete $selectedDisk
-echo -e "Complete!"
+# echo -e "\nWiping disk $selectedDisk..." 
+# wipefs -a $selectedDisk
+# echo -e "Complete!"
 
-echo -e "\nDisk $selectedDisk partitions: "
-sfdisk -l $selectedDisk
+# echo -e "\nDisk $selectedDisk partitions: "
+# sfdisk -l $selectedDisk
 
-echo -e "\nPartitioning disk..." 
-echo -e "n\n\n\n+512M\nt\n1\nn\n\n\n+2G\nt\n2\n19\nn\n\n\n\nw\n" | fdisk $selectedDisk
-echo -e "Complete!"
+# echo -e "\nPartitioning disk..." 
+# echo -e "n\n\n\n+512M\nt\n1\nn\n\n\n+2G\nt\n2\n19\nn\n\n\n\nw\n" | fdisk $selectedDisk
+# echo -e "Complete!"
 
-echo -e "\nDisk $selectedDisk partitions: "
-sfdisk -l $selectedDisk
+# echo -e "\nDisk $selectedDisk partitions: "
+# sfdisk -l $selectedDisk
 
-echo -e "\nFormatting /mnt to ext4..." 
-mkfs.ext4 "$selectedDisk3"
-echo -e "Complete!"
+# echo -e "\nFormatting /mnt to ext4..." 
+# mkfs.ext4 "$selectedDisk3"
+# echo -e "Complete!"
