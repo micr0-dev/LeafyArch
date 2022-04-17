@@ -14,7 +14,7 @@ echo -e "Complete!\n"
 
 while true; do
     lsblk
-    read -p "Please choose disk for installation: (sda, nvme0n1, etc.)" selectedDisk
+    read -p "Please choose disk for installation: (sda, nvme0n1, etc.) " selectedDisk
     selectedDisk="/dev/$selectedDisk"
     read -p "Are you sure you would like to use $selectedDisk? It will be completly wiped and ALL DATA WILL BE LOST (y/n) " diskConfirmation
     case $diskConfirmation in
@@ -23,6 +23,9 @@ while true; do
         * ) echo -e "Please answer yes or no.\n";;
     esac
 done
+
+isSSD = echo "$diskConfirmation" | grep -q 'nvme'
+echo -e "\nSSD? $isSSD\n"
 
 echo -e "\nDisk $selectedDisk partitions: "
 sfdisk -l $selectedDisk
@@ -34,6 +37,13 @@ echo -e "Complete!"
 echo -e "\nDisk $selectedDisk partitions: "
 sfdisk -l $selectedDisk
 
-#echo -e "\nCreating /boot..." 
-#sfdisk --delete $selectedDisk
-#echo -e "Complete!"
+echo -e "\nPartitioning disk..." 
+echo -e "n\n\n\n+512M\nt\n1\nn\n\n\n+2G\nt\n2\n19\nn\n\n\n\nw\n" | fdisk $selectedDisk
+echo -e "Complete!"
+
+echo -e "\nDisk $selectedDisk partitions: "
+sfdisk -l $selectedDisk
+
+echo -e "\nFormatting /mnt to ext4..." 
+mkfs.ext4 "$selectedDisk3"
+echo -e "Complete!"
