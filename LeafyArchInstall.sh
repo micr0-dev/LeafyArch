@@ -24,7 +24,12 @@ while true; do
     esac
 done
 
-isSSD=$(echo "$diskConfirmation" | grep -q 'nvme')
+isSSD="n"
+echo "$diskConfirmation" | grep -q 'nvme' &> /dev/null
+if [ $? == 0 ]; then
+   isSSD="y"
+fi
+
 echo -e "\nSSD? $isSSD\n"
 
 # echo -e "\nDisk $selectedDisk partitions: "
