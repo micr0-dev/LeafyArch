@@ -25,14 +25,14 @@ while true; do
 done
 
 echo -e "\nDisk $selectedDisk partitions: "
-sfdisk -l
+sfdisk -l $selectedDisk
 
 echo -e "\nWiping disk $selectedDisk..." 
 sfdisk --delete $selectedDisk
 echo -e "Complete!"
 
 echo -e "\nDisk $selectedDisk partitions: "
-sfdisk -l
+sfdisk -l $selectedDisk
 
 #echo -e "\nCreating /boot..." 
 #sfdisk --delete $selectedDisk
