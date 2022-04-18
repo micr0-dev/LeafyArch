@@ -1,8 +1,18 @@
 #!/bin/bash
 
+# Color Constants
+Black='\033[0;30m'        # Black
+Red='\033[0;31m'          # Red
+Green='\033[0;32m'        # Green
+Yellow='\033[0;33m'       # Yellow
+Blue='\033[0;34m'         # Blue
+Purple='\033[0;35m'       # Purple
+Cyan='\033[0;36m'         # Cyan
+White='\033[0;37m'        # White
+
 echo "Establishing Connection..."
 if ping -c 1 archlinux.org &> /dev/null; then
-    echo "Connected!"
+    echo -e "$(Green)Connected!"
 else
     echo "Unable to connect to the internet"
     exit 1
@@ -10,45 +20,92 @@ fi
 
 echo -e "\nCofiguring system clocks..."
 timedatectl set-ntp true
-echo -e "Complete!\n"
+echo -e "$(Green)Complete!\n"
 
 while true; do
     lsblk
-    read -p "Please choose disk for installation: (sda, nvme0n1, etc.) " selectedDisk
+    read -p "$(Cyan)Please choose disk for installation: (sda, nvme0n1, etc.) " selectedDisk
     selectedDisk="/dev/$selectedDisk"
-    read -p "Are you sure you would like to use $selectedDisk? It will be completly wiped and ALL DATA WILL BE LOST (y/n) " diskConfirmation
+    read -p "$(Red)Are you sure you would like to use $selectedDisk? It will be completly wiped and ALL DATA WILL BE LOST (y/n) " diskConfirmation
     case $diskConfirmation in
         [Yy]* ) break;;
         [Nn]* ) exit;;
-        * ) echo -e "Please answer yes or no.\n";;
+        * ) echo -e "$(Red)Please answer yes or no.\n";;
     esac
 done
 
 isSSD="n"
-echo "$diskConfirmation" | grep -q 'nvme' &> /dev/null
+echo "$selectedDisk" | grep -q 'nvme' &> /dev/null
 if [ $? == 0 ]; then
    isSSD="y"
 fi
 
-echo -e "\nSSD? $isSSD\n"
+echo -e "\nDisk $selectedDisk partitions: "
+sfdisk -l $selectedDisk
 
-# echo -e "\nDisk $selectedDisk partitions: "
-# sfdisk -l $selectedDisk
+echo -e "\nWiping disk $selectedDisk..." 
+wipefs -a $selectedDisk
+echo -e "$(Green)Complete!"
 
-# echo -e "\nWiping disk $selectedDisk..." 
-# wipefs -a $selectedDisk
-# echo -e "Complete!"
+echo -e "\nDisk $selectedDisk partitions: "
+sfdisk -l $selectedDisk
 
-# echo -e "\nDisk $selectedDisk partitions: "
-# sfdisk -l $selectedDisk
+echo -e "\nPartitioning disk..." 
+echo -e "n\n\n\n+512M\nt\n1\nn\n\n\n+2G\nt\n2\n19\nn\n\n\n\nw\n" | fdisk $selectedDisk
+echo -e "$(Green)Complete!"
 
-# echo -e "\nPartitioning disk..." 
-# echo -e "n\n\n\n+512M\nt\n1\nn\n\n\n+2G\nt\n2\n19\nn\n\n\n\nw\n" | fdisk $selectedDisk
-# echo -e "Complete!"
+echo -e "\nDisk $selectedDisk partitions: "
+sfdisk -l $selectedDisk
 
-# echo -e "\nDisk $selectedDisk partitions: "
-# sfdisk -l $selectedDisk
+echo -e "\nFormatting /mnt to ext4..." 
 
-# echo -e "\nFormatting /mnt to ext4..." 
-# mkfs.ext4 "$selectedDisk3"
-# echo -e "Complete!"
+if isSSD == "n"; then
+    mkfs.ext4 -q "$selectedDisk3"
+else
+    mkfs.ext4 -q "$selectedDiskp3"
+fi
+
+echo -e "$(Green)Complete!"
+
+echo -e "\nFormatting /mnt/boot to fat32..." 
+
+if isSSD == "n"; then
+    mkfs.fat -F 32 -q "$selectedDisk1"
+else
+    mkfs.fat -F 32 -q "$selectedDiskp1"
+fi
+
+echo -e "$(Green)Complete!"
+
+echo -e "\nFormatting [SWAP] to swap..." 
+
+if isSSD == "n"; then
+    mkswap -q "$selectedDisk2"
+else
+    mkswap -q "$selectedDiskp2"
+fi
+
+echo -e "$(Green)Complete!"
+
+echo -e "\nMounting System..." 
+
+if isSSD == "n"; then
+    mount "$selectedDisk3" /mnt 
+    mount --mkdir "$selectedDisk1" /mnt/boot
+    swapon "$selectedDisk2"
+else
+    mkswap "$selectedDiskp2"
+fi
+
+echo -e "$(Green)Complete!"
+
+echo -e "\nInstalling essential Arch packages..."
+pacstrap /mnt base linux linux-firmware
+echo -e "$(Green)Complete!"
+
+echo -e "\nGenerating fstab..."
+genfstab -U /mnt >> /mnt/etc/fstab
+echo -e "$(Green)Complete!"
+
+echo -e "\n Changing root to /mnt..."
+arch-chroot /mnt
